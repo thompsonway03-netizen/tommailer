@@ -1,0 +1,52 @@
+[
+  {
+    "serial_key": "7B725183DD",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "E7F6F9814B",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "7542CDABAC",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "9BB814FCA7",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "C759988074",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "40782DFCF7",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "0C4279F6E8",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "7EF94B124E",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "618025C9AE",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "703941A4DF",
+    "is_active": true,
+    "hwid_locked_to": "isflmzi13uf43g4fw4i9u3"
+  }
+]

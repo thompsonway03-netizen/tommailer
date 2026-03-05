@@ -1,0 +1,17 @@
+appId: com.tommailer.app
+productName: "TomMailer v9ja0.1"
+asar: true
+directories:
+  output: release
+files:
+  - dist/**/*
+  - main.js
+  - package.json
+  - server.js
+  - license-db.js
+  - licensing.json
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

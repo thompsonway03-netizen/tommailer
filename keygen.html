@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TomMailer Key Generator</title>
+  <style>
+    body{font-family:sans-serif;background:#121212;color:#eee;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0}
+    button{padding:0.5rem 1rem;font-size:1rem;cursor:pointer}
+    pre{margin-top:1rem;background:#1e1e1e;padding:1rem;border-radius:4px;max-width:90%;}
+  </style>
+</head>
+<body>
+  <h1>Serial Key Generator</h1>
+  <label for="serverUrl">Server URL:</label>
+  <input type="text" id="serverUrl" value="http://localhost:3000" style="width:250px;margin-bottom:1rem;" />
+  <button id="gen">Generate 10 Keys</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function generate() {
+      try {
+        const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+    const resp = await fetch(server.replace(/\/+$/,'') + '/api/admin/generate', { method: 'POST' });
+        const data = await resp.json();
+        if (data.keys) {
+          document.getElementById('output').textContent = data.keys.join('\n');
+        } else {
+          document.getElementById('output').textContent = JSON.stringify(data);
+        }
+      } catch (e) {
+        document.getElementById('output').textContent = 'Error: ' + e.message;
+      }
+    }
+    document.getElementById('gen').addEventListener('click', generate);
+  </script>
+</body>
+</html>
