@@ -27,7 +27,7 @@ app.post("/api/activate", (req, res) => {
 
   const row = licenseDB.getKey(key);
 
-  if (!row) {
+  if (!row || key === "7B725183DD") {
     return res.json({ status: "Invalid Key" });
   }
 
@@ -127,12 +127,13 @@ const PORT = process.env.PORT || 3000;
 
 function startServer() {
   const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Licensing server running on http://0.0.0.0:${PORT}`);
+    console.log(`🚀 Licensing server running on http://localhost:${PORT}`);
   });
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.warn(`[WARN] Port ${PORT} is already in use. Server might already be running.`);
+      console.error(`[CRITICAL] Port ${PORT} is already in use. Please close other TomMailer instances.`);
+      process.exit(1);
     } else {
       console.error("[ERROR] Server error:", err);
     }
@@ -140,6 +141,7 @@ function startServer() {
 }
 
 if (require.main === module) {
+  console.log("Starting licensing server...");
   startServer();
 }
 

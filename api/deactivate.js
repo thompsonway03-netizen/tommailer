@@ -4,7 +4,9 @@ const db = new LicenseDB();
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
-  const { key, hwid } = req.body;
+  let { key, hwid } = req.body;
+  if (!key) return res.status(400).json({ status: 'Invalid' });
+  key = key.trim().toUpperCase();
   const row = db.getKey(key);
 
   if (row && row.hwid_locked_to === hwid) {

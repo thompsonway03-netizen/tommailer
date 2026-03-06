@@ -112,6 +112,16 @@ export default function App() {
 
   const checkActivation = async (key: string, id: string) => {
     const normalizedKey = key.trim().toUpperCase();
+
+    // Hard-coded protection against default key
+    if (normalizedKey === "7B725183DD") {
+      localStorage.removeItem("mailforge_key");
+      setIsActivated(false);
+      setActivationKey("");
+      setError("This is a default security key and cannot be used for activation.");
+      return;
+    }
+
     setError(null);
     try {
       const res = await apiFetch("/api/activate", {
@@ -128,8 +138,8 @@ export default function App() {
       const data = await res.json();
       if (data.status === "Success") {
         setIsActivated(true);
-        setActivationKey(key);
-        localStorage.setItem("mailforge_key", key);
+        setActivationKey(normalizedKey);
+        localStorage.setItem("mailforge_key", normalizedKey);
       } else {
         localStorage.removeItem("mailforge_key");
         setError(`Activation Failed: ${data.status}`);
@@ -166,20 +176,36 @@ export default function App() {
   };
 
   const handleDeactivate = async () => {
+    // If it's the blocked key, just clear everything locally
+    if (activationKey === "7B725183DD") {
+      setIsActivated(false);
+      setActivationKey("");
+      localStorage.removeItem("mailforge_key");
+      addLog("Local state cleared for blocked key", "info");
+      return;
+    }
+
     try {
       const res = await apiFetch("/api/deactivate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: activationKey, hwid })
       });
+
       const data = await res.json();
-      if (data.status === "Success") {
+      if (data.status === "Success" || data.status === "Invalid") {
         setIsActivated(false);
+        setActivationKey("");
         localStorage.removeItem("mailforge_key");
-        addLog("License deactivated successfully", "info");
+        addLog("License deactivated or cleared locally", "info");
       }
     } catch (e) {
-      addLog("Deactivation failed", "error");
+      // Even on connection error, let's allow the user to clear local state for troubleshooting
+      setIsActivated(false);
+      setActivationKey("");
+      localStorage.removeItem("mailforge_key");
+      addLog("Local state cleared manually", "info");
+      alert("Connection failed. Local license cleared for troubleshooting.");
     }
   };
 

@@ -29,7 +29,7 @@ class LicenseDB {
           this.keys.set(k.serial_key, k);
         });
       } else {
-        // Initialize with some keys from licensing.db or create default ones
+        // Initialize from licensing.json or create default keys
         this.initializeDefaultKeys();
       }
     } catch (e) {
@@ -40,19 +40,8 @@ class LicenseDB {
 
   private initializeDefaultKeys() {
     // Default keys for testing
-    const defaultKeys = [
-      "7B725183DD",
-      "E7F6F9814B",
-      "7542CDABAC",
-      "9BB814FCA7",
-      "C759988074",
-      "40782DFCF7",
-      "0C4279F6E8",
-      "7EF94B124E",
-      "618025C9AE",
-      "703941A4DF"
-    ];
-    
+    const defaultKeys = [];
+
     defaultKeys.forEach(key => {
       if (!this.keys.has(key)) {
         this.keys.set(key, {
@@ -138,7 +127,7 @@ app.post("/api/deactivate", (req, res) => {
 // Email Automation Logic
 app.post("/api/send-emails", async (req, res) => {
   const { senders, recipients, subject, body } = req.body;
-  
+
   if (!senders || !recipients || !subject || !body) {
     return res.status(400).json({ message: "Missing fields" });
   }
@@ -159,7 +148,7 @@ app.post("/api/send-emails", async (req, res) => {
 
     // Verify connection
     await transporter.verify();
-    
+
     // Send mail
     await transporter.sendMail({
       from: sender.user,
@@ -198,4 +187,3 @@ const PORT = 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Licensing server running on http://localhost:${PORT}`);
 });
-

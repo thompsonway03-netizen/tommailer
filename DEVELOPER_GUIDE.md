@@ -20,7 +20,9 @@ For the serial keys to work globally, the backend (the `server.ts` logic) must b
 
 1. **Host the API**: Deploy the backend code.
 2. **Update Client URL**: In `src/App.tsx`, change all `fetch("/api/...")` calls to `fetch("https://your-api-domain.com/api/...")`.
-3. **Database**: The `licensing.db` file will store all user keys and their locked Hardware IDs (HWID).
+3. **Database**: Keys are stored in `licensing.json`.
+   - Local/Electron: `%USERPROFILE%\\.tommailer\\licensing.json`
+   - Vercel serverless: `/tmp/licensing.json` (ephemeral, not persistent across cold starts/redeploys)
 
 ---
 
@@ -34,7 +36,10 @@ You can send a POST request to your live server to generate 10 new keys at a tim
 - **Result**: 10 new 10-character keys will be added to the database.
 
 ### Method B: Manual Database Entry
-You can open `licensing.db` using a tool like **SQLite Browser** and manually add keys to the `keys` table. Set `is_active = 0` and `hwid_locked_to = NULL`.
+You can open `%USERPROFILE%\\.tommailer\\licensing.json` and manually add keys as JSON objects using:
+- `serial_key` (string)
+- `is_active` (boolean)
+- `hwid_locked_to` (string or `null`)
 
 ---
 
@@ -77,7 +82,7 @@ In your `server.ts`, I have already prepared the logic. You would add a new rout
 ### Step 4: Using "License Keys" Feature
 Most platforms have a "License Keys" feature. You can:
 1. Generate 1,000 keys using the **Developer Console** I built for you.
-2. Export them from `licensing.db` as a CSV.
+2. Export them from `%USERPROFILE%\\.tommailer\\licensing.json` as CSV.
 3. Upload that CSV to Lemon Squeezy.
 4. Lemon Squeezy will automatically "give away" one unique key from your list to every person who buys the app.
 

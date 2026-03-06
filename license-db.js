@@ -1,4 +1,5 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 
@@ -6,106 +7,111 @@ const crypto = require('crypto');
 class LicenseDB {
   constructor() {
     this.keys = new Map();
+    this.dbFilePath = this.resolveDbFile();
     this.load();
+  }
+
+  get dbFile() {
+    return this.dbFilePath;
+  }
+
+  resolveDbFile() {
+    const legacyFile = path.join(__dirname, 'licensing.json');
+
+    // Allow explicit override for self-hosted setups.
+    if (process.env.TOMMAILER_LICENSE_FILE) {
+      return path.resolve(process.env.TOMMAILER_LICENSE_FILE);
+    }
+
+    // Vercel has a read-only filesystem except for /tmp
+    if (process.env.VERCEL) {
+      return path.join('/tmp', 'licensing.json');
+    }
+
+    // Use a shared, writable location so Mailer and Keygen read the same keys.
+    const preferred = path.join(os.homedir(), '.tommailer', 'licensing.json');
+    if (this.canWriteToDirectory(path.dirname(preferred))) {
+      return preferred;
+    }
+
+    // Fallback keeps behavior working in restricted environments.
+    console.warn(`[DB] Shared path is not writable, falling back to: ${legacyFile}`);
+    return legacyFile;
+  }
+
+  canWriteToDirectory(dir) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.accessSync(dir, fs.constants.W_OK);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   load() {
     try {
       const primaryFile = this.dbFile;
-      const fallbackFile = path.join(__dirname, 'licensing.json');
+      const legacyBundledFile = path.join(__dirname, 'licensing.json');
 
       let data = null;
       if (fs.existsSync(primaryFile)) {
-        console.log(`Loading license DB from primary: ${primaryFile}`);
+        console.log(`[DB] Loading from: ${primaryFile}`);
         data = fs.readFileSync(primaryFile, 'utf-8');
-      } else if (fs.existsSync(fallbackFile)) {
-        console.log(`Seeding license DB from fallback: ${fallbackFile}`);
-        data = fs.readFileSync(fallbackFile, 'utf-8');
-        // If we are on Vercel, we should write this to /tmp so we can update it
-        if (process.env.VERCEL) {
-          try {
-            fs.writeFileSync(primaryFile, data);
-            console.log(`Successfully seeded ${primaryFile}`);
-          } catch (err) {
-            console.error(`Failed to write seed file to ${primaryFile}:`, err);
-          }
+      } else if (fs.existsSync(legacyBundledFile)) {
+        console.log(`[DB] Seeding from legacy file: ${legacyBundledFile}`);
+        data = fs.readFileSync(legacyBundledFile, 'utf-8');
+        try {
+          this.ensureDirectory();
+          fs.writeFileSync(primaryFile, data);
+          console.log(`[DB] Seeded primary DB: ${primaryFile}`);
+        } catch (err) {
+          console.error(`[DB] Failed to seed ${primaryFile}:`, err);
         }
       }
 
       if (data) {
         const keysArray = JSON.parse(data);
+        this.keys.clear();
         keysArray.forEach(k => {
-          this.keys.set(k.serial_key, k);
+          if (k.serial_key) this.keys.set(k.serial_key.toUpperCase(), k);
         });
-      } else {
-        this.initializeDefaultKeys();
       }
     } catch (e) {
-      console.error('Error loading license DB:', e);
-      this.initializeDefaultKeys();
+      console.error('[DB] Error loading:', e);
     }
-  }
-
-  get dbFile() {
-    // Vercel has a read-only filesystem except for /tmp
-    if (process.env.VERCEL) {
-      return path.join('/tmp', 'licensing.json');
-    }
-    // For local dev, use an absolute path relative to the project root
-    return path.join(__dirname, 'licensing.json');
-  }
-
-  initializeDefaultKeys() {
-    const defaultKeys = [
-      '7B725183DD',
-      'E7F6F9814B',
-      '7542CDABAC',
-      '9BB814FCA7',
-      'C759988074',
-      '40782DFCF7',
-      '0C4279F6E8',
-      '7EF94B124E',
-      '618025C9AE',
-      '703941A4DF'
-    ];
-
-    defaultKeys.forEach(key => {
-      if (!this.keys.has(key)) {
-        this.keys.set(key, {
-          serial_key: key,
-          is_active: false,
-          hwid_locked_to: null
-        });
-      }
-    });
-    this.save();
   }
 
   save() {
     try {
+      this.ensureDirectory();
       const keysArray = Array.from(this.keys.values());
       fs.writeFileSync(this.dbFile, JSON.stringify(keysArray, null, 2));
     } catch (e) {
-      console.error('Error saving license DB:', e);
+      console.error('[DB] Error saving:', e);
     }
+  }
+
+  ensureDirectory() {
+    fs.mkdirSync(path.dirname(this.dbFile), { recursive: true });
   }
 
   getKey(serialKey) {
     if (!serialKey) return null;
-    const normalizedKey = serialKey.trim().toUpperCase();
-    return this.keys.get(normalizedKey);
+    return this.keys.get(serialKey.trim().toUpperCase());
   }
 
   updateKey(serialKey, is_active, hwid) {
-    let key = this.keys.get(serialKey);
+    const keyStr = serialKey.trim().toUpperCase();
+    let key = this.keys.get(keyStr);
+
     if (!key) {
-      // If it's a new key being registered (e.g. from generate)
       key = {
-        serial_key: serialKey,
+        serial_key: keyStr,
         is_active: is_active,
         hwid_locked_to: hwid
       };
-      this.keys.set(serialKey, key);
+      this.keys.set(keyStr, key);
     } else {
       key.is_active = is_active;
       key.hwid_locked_to = hwid;
