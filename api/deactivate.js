@@ -7,10 +7,10 @@ module.exports = async (req, res) => {
   let { key, hwid } = req.body;
   if (!key) return res.status(400).json({ status: 'Invalid' });
   key = key.trim().toUpperCase();
-  const row = db.getKey(key);
+  const row = await db.getKey(key);
 
   if (row && row.hwid_locked_to === hwid) {
-    db.updateKey(key, false, null);
+    await db.updateKey(key, false, null);
     return res.json({ status: 'Success' });
   }
   return res.json({ status: 'Invalid' });

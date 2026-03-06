@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
   if (!key || !hwid) return res.status(400).json({ message: 'Missing key or hwid' });
   key = key.trim().toUpperCase();
 
-  const row = db.getKey(key);
+  const row = await db.getKey(key);
   if (!row || key === '7B725183DD') return res.json({ status: 'Invalid Key' });
 
   if (row.is_active) {
@@ -19,6 +19,6 @@ module.exports = async (req, res) => {
     }
   }
 
-  db.updateKey(key, true, hwid);
+  await db.updateKey(key, true, hwid);
   return res.json({ status: 'Success' });
 };

@@ -19,13 +19,13 @@ app.use((req, res, next) => {
 });
 
 // Licensing Endpoints
-app.post("/api/activate", (req, res) => {
+app.post("/api/activate", async (req, res) => {
   let { key, hwid } = req.body;
   if (!key || !hwid) return res.status(400).json({ message: "Missing key or hwid" });
 
   key = key.trim().toUpperCase();
 
-  const row = licenseDB.getKey(key);
+  const row = await licenseDB.getKey(key);
 
   if (!row || key === "7B725183DD") {
     return res.json({ status: "Invalid Key" });
@@ -39,18 +39,18 @@ app.post("/api/activate", (req, res) => {
     }
   }
 
-  licenseDB.updateKey(key, true, hwid);
+  await licenseDB.updateKey(key, true, hwid);
   return res.json({ status: "Success" });
 });
 
-app.post("/api/deactivate", (req, res) => {
+app.post("/api/deactivate", async (req, res) => {
   let { key, hwid } = req.body;
   if (!key) return res.status(400).json({ status: "Invalid" });
   key = key.trim().toUpperCase();
-  const row = licenseDB.getKey(key);
+  const row = await licenseDB.getKey(key);
 
   if (row && row.hwid_locked_to === hwid) {
-    licenseDB.updateKey(key, false, null);
+    await licenseDB.updateKey(key, false, null);
     return res.json({ status: "Success" });
   }
   return res.json({ status: "Invalid" });
@@ -97,28 +97,30 @@ app.post("/api/send-emails", async (req, res) => {
 });
 
 // Admin: List all keys
-app.get("/api/admin/keys", (req, res) => {
-  res.json(licenseDB.getAllKeys());
+app.get("/api/admin/keys", async (req, res) => {
+  res.json(await licenseDB.getAllKeys());
 });
 
 // Admin: Generate more keys
-app.post("/api/admin/generate", (req, res) => {
+app.post("/api/admin/generate", async (req, res) => {
   const created = [];
   for (let i = 0; i < 10; i++) {
     const newKey = licenseDB.generateKey();
-    licenseDB.updateKey(newKey, false, null);
+    await licenseDB.updateKey(newKey, false, null);
     created.push(newKey);
   }
   res.json({ message: "10 new keys generated", keys: created });
 });
 
 // Health check
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+  const allKeys = await licenseDB.getAllKeys();
   res.json({
     status: "ok",
     db: {
-      keyCount: licenseDB.getAllKeys().length,
-      file: licenseDB.dbFile
+      keyCount: allKeys.length,
+      file: licenseDB.dbFile,
+      provider: licenseDB.isUsingSupabase ? 'supabase' : 'json'
     }
   });
 });
