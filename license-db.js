@@ -11,8 +11,28 @@ class LicenseDB {
 
   load() {
     try {
-      if (fs.existsSync(this.dbFile)) {
-        const data = fs.readFileSync(this.dbFile, 'utf-8');
+      const primaryFile = this.dbFile;
+      const fallbackFile = path.join(__dirname, 'licensing.json');
+
+      let data = null;
+      if (fs.existsSync(primaryFile)) {
+        console.log(`Loading license DB from primary: ${primaryFile}`);
+        data = fs.readFileSync(primaryFile, 'utf-8');
+      } else if (fs.existsSync(fallbackFile)) {
+        console.log(`Seeding license DB from fallback: ${fallbackFile}`);
+        data = fs.readFileSync(fallbackFile, 'utf-8');
+        // If we are on Vercel, we should write this to /tmp so we can update it
+        if (process.env.VERCEL) {
+          try {
+            fs.writeFileSync(primaryFile, data);
+            console.log(`Successfully seeded ${primaryFile}`);
+          } catch (err) {
+            console.error(`Failed to write seed file to ${primaryFile}:`, err);
+          }
+        }
+      }
+
+      if (data) {
         const keysArray = JSON.parse(data);
         keysArray.forEach(k => {
           this.keys.set(k.serial_key, k);
