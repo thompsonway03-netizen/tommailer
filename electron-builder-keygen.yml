@@ -2,6 +2,8 @@ appId: com.tommailer.keygen
 productName: "TomMailer Keygen"
 asar: true
 icon: assets/icon.png
+extraMetadata:
+  main: keygen-app/main.js
 directories:
   output: release-keygen
 files:

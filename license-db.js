@@ -75,12 +75,20 @@ class LicenseDB {
   }
 
   updateKey(serialKey, is_active, hwid) {
-    const key = this.keys.get(serialKey);
-    if (key) {
+    let key = this.keys.get(serialKey);
+    if (!key) {
+      // If it's a new key being registered (e.g. from generate)
+      key = {
+        serial_key: serialKey,
+        is_active: is_active,
+        hwid_locked_to: hwid
+      };
+      this.keys.set(serialKey, key);
+    } else {
       key.is_active = is_active;
       key.hwid_locked_to = hwid;
-      this.save();
     }
+    this.save();
   }
 
   getAllKeys() {
