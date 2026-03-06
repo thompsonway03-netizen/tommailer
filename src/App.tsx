@@ -100,7 +100,7 @@ export default function App() {
   };
 
   const apiFetch = (path: string, opts: RequestInit = {}) => {
-    let prefix = serverUrl ? serverUrl.trim().replace(/\/+$/, '') : '';
+    let prefix = serverUrl ? serverUrl.trim().replace(/\/+$/, '') : 'http://localhost:3000';
     // Auto-fix missing https://
     if (prefix && !prefix.startsWith('http') && prefix.includes('.')) {
       prefix = `https://${prefix}`;
@@ -448,6 +448,10 @@ export default function App() {
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[10px] text-emerald-500 uppercase">Online / Secured</span>
                 </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[9px] uppercase text-[#444] tracking-widest">API Endpoint</p>
+                <p className="text-[8px] text-[#444] break-all">{serverUrl || 'http://localhost:3000'}</p>
               </div>
             </div>
           </div>
