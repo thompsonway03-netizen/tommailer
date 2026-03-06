@@ -7,11 +7,12 @@ function createWindow() {
     height: 800,
   });
 
-  // In production the files will be located in the `dist` folder inside the
-  // app's resources. Use a file:// URL so that relative asset paths are
-  // respected and avoid potential issues when packaging with asar.
-  const indexPath = path.join(__dirname, "dist", "index.html");
-  win.loadURL(`file://${indexPath}`);
+  if (process.env.NODE_ENV === 'development') {
+    win.loadURL('http://localhost:5173');
+  } else {
+    const indexPath = path.join(__dirname, "dist", "index.html");
+    win.loadURL(`file://${indexPath}`);
+  }
 }
 
 // Start the backend server (licensing / email) from the main process. This
