@@ -1,7 +1,7 @@
 const LicenseDB = require('../../license-db');
 const db = new LicenseDB();
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   console.log(`[GENERATE] Request received. Method: ${req.method}, Count: ${req.query.count}`);
 
   if (req.method === 'OPTIONS') {
@@ -20,7 +20,7 @@ module.exports = (req, res) => {
 
   for (let i = 0; i < count; i++) {
     const newKey = db.generateKey();
-    db.updateKey(newKey, false, null);
+    await db.updateKey(newKey, false, null);
     created.push(newKey);
   }
 
