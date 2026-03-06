@@ -1,6 +1,8 @@
 {
   "name": "tommailer",
   "version": "0.1.0",
+  "description": "Professional email automation suite with SMTP rotation and centralized license management.",
+  "author": "TomMailer",
   "main": "main.js",
   "scripts": {
     "dev": "npx concurrently \"npm run dev:server\" \"npm run dev:client\"",
@@ -8,7 +10,7 @@
     "dev:server": "node server.js",
     "preview": "vite preview",
     "start": "electron .",
-    "start:keygen": "electron keygen-main.js",
+    "start:keygen": "electron keygen-app/main.js",
     "build:electron": "vite build && electron-builder --config electron-builder.yml --win nsis",
     "build:keygen": "electron-builder --config electron-builder-keygen.yml --win nsis",
     "build": "vite build",

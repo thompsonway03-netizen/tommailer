@@ -1,17 +1,20 @@
 appId: com.tommailer.keygen
-productName: "TomMailer Serial Keygen"
+productName: "TomMailer Keygen"
 asar: true
+icon: assets/icon.png
 directories:
   output: release-keygen
 files:
-  - keygen.html
-  - keygen-main.js
+  - keygen-app/**/*
+  - assets/icon.png
   - package.json
   - license-db.js
   - licensing.json
   - server.js
+  - node_modules/**/*
 win:
   target: nsis
+  icon: assets/icon.png
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
