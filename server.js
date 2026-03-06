@@ -20,8 +20,10 @@ app.use((req, res, next) => {
 
 // Licensing Endpoints
 app.post("/api/activate", (req, res) => {
-  const { key, hwid } = req.body;
+  let { key, hwid } = req.body;
   if (!key || !hwid) return res.status(400).json({ message: "Missing key or hwid" });
+
+  key = key.trim().toUpperCase();
 
   const row = licenseDB.getKey(key);
 
@@ -42,7 +44,9 @@ app.post("/api/activate", (req, res) => {
 });
 
 app.post("/api/deactivate", (req, res) => {
-  const { key, hwid } = req.body;
+  let { key, hwid } = req.body;
+  if (!key) return res.status(400).json({ status: "Invalid" });
+  key = key.trim().toUpperCase();
   const row = licenseDB.getKey(key);
 
   if (row && row.hwid_locked_to === hwid) {

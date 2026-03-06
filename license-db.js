@@ -51,8 +51,8 @@ class LicenseDB {
     if (process.env.VERCEL) {
       return path.join('/tmp', 'licensing.json');
     }
-    // allow overriding via environment if desired
-    return process.env.LICENSE_DB_FILE || 'licensing.json';
+    // For local dev, use an absolute path relative to the project root
+    return path.join(__dirname, 'licensing.json');
   }
 
   initializeDefaultKeys() {
@@ -91,7 +91,9 @@ class LicenseDB {
   }
 
   getKey(serialKey) {
-    return this.keys.get(serialKey);
+    if (!serialKey) return null;
+    const normalizedKey = serialKey.trim().toUpperCase();
+    return this.keys.get(normalizedKey);
   }
 
   updateKey(serialKey, is_active, hwid) {

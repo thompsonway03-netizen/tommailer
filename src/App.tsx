@@ -111,12 +111,13 @@ export default function App() {
   };
 
   const checkActivation = async (key: string, id: string) => {
+    const normalizedKey = key.trim().toUpperCase();
     setError(null);
     try {
       const res = await apiFetch("/api/activate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key, hwid: id })
+        body: JSON.stringify({ key: normalizedKey, hwid: id })
       });
 
       if (!res.ok) {
