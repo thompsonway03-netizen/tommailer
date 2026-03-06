@@ -4,6 +4,10 @@ const db = new LicenseDB();
 module.exports = (req, res) => {
   console.log(`[GENERATE] Request received. Method: ${req.method}, Count: ${req.query.count}`);
 
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     console.warn(`[GENERATE] Rejected non-POST request: ${req.method}`);
     return res.status(405).end();
