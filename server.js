@@ -110,7 +110,13 @@ app.post("/api/admin/generate", (req, res) => {
 
 // Health check
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+  res.json({
+    status: "ok",
+    db: {
+      keyCount: licenseDB.getAllKeys().length,
+      file: licenseDB.dbFile
+    }
+  });
 });
 
 const PORT = process.env.PORT || 3000;
