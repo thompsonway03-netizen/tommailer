@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  Shield, 
-  Mail, 
-  Settings, 
-  Terminal, 
-  Play, 
-  Square, 
-  RefreshCw, 
-  Key, 
-  User, 
+import {
+  Shield,
+  Mail,
+  Settings,
+  Terminal,
+  Play,
+  Square,
+  RefreshCw,
+  Key,
+  User,
   Lock,
   CheckCircle2,
   AlertCircle,
@@ -56,7 +56,7 @@ export default function App() {
   const [serverUrl, setServerUrl] = useState<string>(
     localStorage.getItem('mailforge_server') || ''
   );
-  
+
   // SMTP Management
   const [senders, setSenders] = useState<Sender[]>([]);
   const [newSender, setNewSender] = useState<Omit<Sender, "id">>({ host: "", port: "587", user: "", pass: "" });
@@ -65,12 +65,12 @@ export default function App() {
   // Recipient Management
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [recipientInput, setRecipientInput] = useState<string>("");
-  
+
   // Content
   const [subject, setSubject] = useState<string>("Hello from MailForge");
   const [body, setBody] = useState<string>("This is an automated message.");
   const [replyTo, setReplyTo] = useState<string>("");
-  
+
   const logEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -101,18 +101,30 @@ export default function App() {
   };
 
   const apiFetch = (path: string, opts: RequestInit = {}) => {
-    const prefix = serverUrl ? serverUrl.replace(/\/+$/,'') : '';
+    let prefix = serverUrl ? serverUrl.trim().replace(/\/+$/, '') : '';
+    // Auto-fix missing https://
+    if (prefix && !prefix.startsWith('http') && prefix.includes('.')) {
+      prefix = `https://${prefix}`;
+    }
     const url = prefix ? `${prefix}${path.startsWith('/') ? '' : '/'}${path}` : path;
+    console.log(`[API] Fetching: ${url}`);
     return fetch(url, opts);
   };
 
   const checkActivation = async (key: string, id: string) => {
+    setError(null);
     try {
       const res = await apiFetch("/api/activate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, hwid: id })
       });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "Server error");
+        throw new Error(`Server returned ${res.status}: ${text}`);
+      }
+
       const data = await res.json();
       if (data.status === "Success") {
         setIsActivated(true);
@@ -120,16 +132,37 @@ export default function App() {
         localStorage.setItem("mailforge_key", key);
       } else {
         localStorage.removeItem("mailforge_key");
-        setError(data.status);
+        setError(`Activation Failed: ${data.status}`);
       }
-    } catch (e) {
-      setError("Server connection failed");
+    } catch (e: any) {
+      console.error("Activation Error:", e);
+      setError(`Connection Error: ${e.message}. Please check your Server URL.`);
     }
   };
 
   const handleActivate = () => {
     if (!activationKey) return;
     checkActivation(activationKey, hwid);
+  };
+
+  const handleTestConnection = async () => {
+    setError(null);
+    let msg = "";
+    try {
+      const res = await apiFetch("/api/health");
+      const data = await res.json();
+      if (res.ok) {
+        msg = `Success! Connected to server. Status: ${data.status}`;
+        addLog(msg, "success");
+        alert(msg);
+      } else {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (e: any) {
+      msg = `Connection Failed: ${e.message}. Check your URL.`;
+      setError(msg);
+      alert(msg);
+    }
   };
 
   const handleDeactivate = async () => {
@@ -192,7 +225,7 @@ export default function App() {
       addLog("No senders configured. Please add at least one SMTP account.", "error");
       return;
     }
-    
+
     const pendingCount = recipients.filter(r => r.status === "pending").length;
     if (pendingCount === 0) {
       addLog("No pending recipients found in the list.", "error");
@@ -201,9 +234,9 @@ export default function App() {
 
     setIsSending(true);
     addLog(`Starting automation sequence for ${pendingCount} recipients...`, "info");
-    
+
     abortControllerRef.current = new AbortController();
-    
+
     let senderIdx = 0;
     // Use a local flag because React state updates are asynchronous
     let active = true;
@@ -221,14 +254,14 @@ export default function App() {
       addLog(`[${i + 1}/${recipients.length}] Sending to ${recipient.email} via ${sender.user}...`, "info");
 
       try {
-        const payload:any = { 
-            senders: [sender], 
-            recipients: [recipient.email], 
-            subject, 
-            body 
-          };
-    if (replyTo) payload.replyTo = replyTo;
-    const res = await fetch("/api/send-emails", {
+        const payload: any = {
+          senders: [sender],
+          recipients: [recipient.email],
+          subject,
+          body
+        };
+        if (replyTo) payload.replyTo = replyTo;
+        const res = await fetch("/api/send-emails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -281,11 +314,11 @@ export default function App() {
       const res = await fetch("/api/send-emails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          senders: [newSender], 
+        body: JSON.stringify({
+          senders: [newSender],
           recipients: [newSender.user], // Send to self
-          subject: "MailForge Connection Test", 
-          body: "Your SMTP settings are correct." 
+          subject: "MailForge Connection Test",
+          body: "Your SMTP settings are correct."
         })
       });
       const data = await res.json();
@@ -308,7 +341,7 @@ export default function App() {
   if (!isActivated) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 font-mono text-white">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md bg-[#151619] border border-[#333] rounded-xl overflow-hidden shadow-2xl shadow-black"
@@ -320,7 +353,7 @@ export default function App() {
             </div>
             <Cpu className="w-5 h-5 text-[#444]" />
           </div>
-          
+
           <div className="p-8 space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-widest text-[#888] flex items-center gap-2">
@@ -348,7 +381,7 @@ export default function App() {
               <label className="text-[10px] uppercase tracking-widest text-[#888] flex items-center gap-2">
                 <Key className="w-3 h-3" /> Serial Key
               </label>
-              <input 
+              <input
                 type="text"
                 value={activationKey}
                 onChange={(e) => setActivationKey(e.target.value.toUpperCase())}
@@ -358,22 +391,31 @@ export default function App() {
             </div>
 
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-red-500/10 border border-red-500/20 p-3 rounded flex items-center gap-3 text-xs text-red-400"
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {error}
+                <span className="break-all">{error}</span>
               </motion.div>
             )}
 
-            <button 
-              onClick={handleActivate}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded font-bold uppercase tracking-widest text-xs transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <CheckCircle2 className="w-4 h-4" /> Activate License
-            </button>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleActivate}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded font-bold uppercase tracking-widest text-xs transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Activate License
+              </button>
+
+              <button
+                onClick={handleTestConnection}
+                className="w-full bg-transparent border border-[#333] hover:border-emerald-500/50 text-[#666] hover:text-emerald-400 py-2 rounded font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-3 h-3" /> Test Connection
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -383,7 +425,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] font-mono text-white p-6 flex flex-col items-center">
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 flex-grow">
-        
+
         {/* Sidebar */}
         <div className="space-y-6">
           <div className="bg-[#151619] border border-[#333] rounded-xl p-6 space-y-6">
@@ -393,13 +435,13 @@ export default function App() {
             </div>
 
             <nav className="space-y-1">
-              <button 
+              <button
                 onClick={() => setActiveTab("automation")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs uppercase tracking-widest transition-all ${activeTab === "automation" ? 'bg-emerald-600 text-white' : 'text-[#666] hover:bg-[#1c1d21] hover:text-white'}`}
               >
                 <Mail className="w-4 h-4" /> Automation
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab("settings")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs uppercase tracking-widest transition-all ${activeTab === "settings" ? 'bg-emerald-600 text-white' : 'text-[#666] hover:bg-[#1c1d21] hover:text-white'}`}
               >
@@ -423,7 +465,7 @@ export default function App() {
           </div>
 
           <div className="bg-[#151619] border border-[#333] rounded-xl p-6 space-y-4">
-            <button 
+            <button
               onClick={handleDeactivate}
               className="w-full flex items-center justify-center gap-2 text-red-400 hover:text-red-300 text-[10px] uppercase tracking-widest transition-colors"
             >
@@ -455,34 +497,34 @@ export default function App() {
                   {/* SMTP Management */}
                   <div className="bg-[#151619] border border-[#333] rounded-xl p-6 space-y-4">
                     <h3 className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">SMTP Senders</h3>
-                    
+
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-[9px] uppercase text-[#666]">Host</label>
-                        <input 
+                        <input
                           type="text"
                           value={newSender.host}
-                          onChange={e => setNewSender({...newSender, host: e.target.value})}
+                          onChange={e => setNewSender({ ...newSender, host: e.target.value })}
                           placeholder="smtp.gmail.com"
                           className="w-full bg-[#0a0a0a] border border-[#333] rounded p-2 text-xs outline-none focus:border-emerald-500"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] uppercase text-[#666]">Port</label>
-                        <input 
+                        <input
                           type="text"
                           value={newSender.port}
-                          onChange={e => setNewSender({...newSender, port: e.target.value})}
+                          onChange={e => setNewSender({ ...newSender, port: e.target.value })}
                           placeholder="587"
                           className="w-full bg-[#0a0a0a] border border-[#333] rounded p-2 text-xs outline-none focus:border-emerald-500"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] uppercase text-[#666]">Username</label>
-                        <input 
+                        <input
                           type="text"
                           value={newSender.user}
-                          onChange={e => setNewSender({...newSender, user: e.target.value})}
+                          onChange={e => setNewSender({ ...newSender, user: e.target.value })}
                           placeholder="user@gmail.com"
                           className="w-full bg-[#0a0a0a] border border-[#333] rounded p-2 text-xs outline-none focus:border-emerald-500"
                         />
@@ -490,14 +532,14 @@ export default function App() {
                       <div className="space-y-1">
                         <label className="text-[9px] uppercase text-[#666]">Password</label>
                         <div className="relative">
-                          <input 
+                          <input
                             type={showPassword ? "text" : "password"}
                             value={newSender.pass}
-                            onChange={e => setNewSender({...newSender, pass: e.target.value})}
+                            onChange={e => setNewSender({ ...newSender, pass: e.target.value })}
                             placeholder="••••••••"
                             className="w-full bg-[#0a0a0a] border border-[#333] rounded p-2 text-xs outline-none focus:border-emerald-500 pr-8"
                           />
-                          <button 
+                          <button
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-2 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#666]"
                           >
@@ -507,13 +549,13 @@ export default function App() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button 
+                      <button
                         onClick={addSender}
                         className="flex-grow bg-[#1c1d21] border border-[#333] hover:border-emerald-500 text-[10px] uppercase py-2 rounded transition-all flex items-center justify-center gap-2"
                       >
                         <Plus className="w-3 h-3" /> Add SMTP Account
                       </button>
-                      <button 
+                      <button
                         onClick={testSmtp}
                         className="bg-[#1c1d21] border border-[#333] hover:border-emerald-500 text-[10px] uppercase px-4 py-2 rounded transition-all flex items-center justify-center gap-2"
                         title="Test current SMTP settings"
@@ -541,7 +583,7 @@ export default function App() {
                   <div className="bg-[#151619] border border-[#333] rounded-xl p-6 space-y-4 flex flex-col min-h-0 flex-grow">
                     <h3 className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Recipient List</h3>
                     <div className="flex gap-2">
-                      <input 
+                      <input
                         type="text"
                         value={recipientInput}
                         onChange={e => setRecipientInput(e.target.value)}
@@ -587,7 +629,7 @@ export default function App() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] uppercase tracking-widest text-[#888]">Subject</label>
-                      <input 
+                      <input
                         type="text"
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
@@ -596,7 +638,7 @@ export default function App() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] uppercase tracking-widest text-[#888]">Body</label>
-                      <textarea 
+                      <textarea
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
                         className="w-full h-32 bg-[#0a0a0a] border border-[#333] rounded p-3 text-xs focus:border-emerald-500 outline-none resize-none"
@@ -619,9 +661,9 @@ export default function App() {
                         <div key={i} className="flex gap-3">
                           <span className="text-[#444] flex-shrink-0">[{log.timestamp}]</span>
                           <span className={
-                            log.type === "success" ? "text-emerald-500" : 
-                            log.type === "error" ? "text-red-500" : 
-                            "text-[#888]"
+                            log.type === "success" ? "text-emerald-500" :
+                              log.type === "error" ? "text-red-500" :
+                                "text-[#888]"
                           }>
                             {log.message}
                           </span>
@@ -647,14 +689,14 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-3">
                   {isSending ? (
-                    <button 
+                    <button
                       onClick={stopAutomation}
                       className="bg-red-600 hover:bg-red-500 text-white px-8 py-2.5 rounded text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2"
                     >
                       <Square className="w-3 h-3" /> Stop Sequence
                     </button>
                   ) : (
-                    <button 
+                    <button
                       onClick={startAutomation}
                       className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-2.5 rounded text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/20"
                     >
@@ -672,7 +714,7 @@ export default function App() {
                   <p className="text-[10px] uppercase text-[#666]">License Management</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs">{activationKey}</span>
-                    <button 
+                    <button
                       onClick={handleDeactivate}
                       className="text-[10px] text-red-500 hover:underline uppercase"
                     >
