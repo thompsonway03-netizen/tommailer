@@ -55,7 +55,7 @@ app.post("/api/deactivate", (req, res) => {
 // Email Automation Logic
 app.post("/api/send-emails", async (req, res) => {
   const { senders, recipients, subject, body, replyTo } = req.body;
-  
+
   if (!senders || !recipients || !subject || !body) {
     return res.status(400).json({ message: "Missing fields" });
   }
@@ -75,7 +75,7 @@ app.post("/api/send-emails", async (req, res) => {
     });
 
     await transporter.verify();
-    
+
     const mailOptions = {
       from: sender.user,
       to: recipient,
@@ -114,6 +114,23 @@ app.get("/api/health", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Licensing server running on http://0.0.0.0:${PORT}`);
-});
+
+function startServer() {
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Licensing server running on http://0.0.0.0:${PORT}`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[WARN] Port ${PORT} is already in use. Server might already be running.`);
+    } else {
+      console.error("[ERROR] Server error:", err);
+    }
+  });
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;

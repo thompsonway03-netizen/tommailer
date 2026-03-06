@@ -52,7 +52,6 @@ export default function App() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [generatedKeys, setGeneratedKeys] = useState<string[]>([]);
   const [serverUrl, setServerUrl] = useState<string>(
     localStorage.getItem('mailforge_server') || ''
   );
@@ -183,18 +182,6 @@ export default function App() {
     }
   };
 
-  const handleGenerateKeys = async () => {
-    try {
-      const res = await apiFetch("/api/admin/generate", { method: "POST" });
-      const data = await res.json();
-      if (data.keys) {
-        setGeneratedKeys(data.keys);
-        addLog("Generated new serial keys", "success");
-      }
-    } catch (e) {
-      addLog("Key generation failed", "error");
-    }
-  };
 
   const addSender = () => {
     if (!newSender.host || !newSender.user || !newSender.pass) return;
@@ -471,19 +458,6 @@ export default function App() {
             >
               <LogOut className="w-3 h-3" /> Deactivate License
             </button>
-            <button
-              onClick={handleGenerateKeys}
-              className="w-full flex items-center justify-center gap-2 text-emerald-400 hover:text-emerald-300 text-[10px] uppercase tracking-widest transition-colors"
-            >
-              <Plus className="w-3 h-3" /> Generate 10 Serial Keys
-            </button>
-            {generatedKeys.length > 0 && (
-              <div className="bg-[#0a0a0a] p-2 rounded border border-[#222] text-xs text-emerald-400 space-y-1">
-                {generatedKeys.map(k => (
-                  <div key={k} className="break-all">{k}</div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

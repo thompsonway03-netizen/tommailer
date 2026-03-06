@@ -51,8 +51,8 @@
   },
   {
     "serial_key": "4FD800AFF1",
-    "is_active": false,
-    "hwid_locked_to": null
+    "is_active": true,
+    "hwid_locked_to": "TEST-HWID-001"
   },
   {
     "serial_key": "EAF7028259",
@@ -96,6 +96,106 @@
   },
   {
     "serial_key": "78EF876DCE",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "C1D85BFDBF",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "FA66886DE4",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "7EAA2FADDD",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "5C384C664D",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "CC7BB20367",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "E5E83D108B",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "0F83D1395A",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "61CC8BC3C5",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "9682669836",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "C30CD1B298",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "F38B6AF968",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "D337197CAA",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "D3E77E6E9C",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "D37B5E3B0E",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "BF4223B93F",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "0C65A1FB2C",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "D3EA6F673D",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "15DD7ECD1E",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "36001028D2",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "5429A9BC8C",
     "is_active": false,
     "hwid_locked_to": null
   }

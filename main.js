@@ -10,8 +10,7 @@ function createWindow() {
   if (process.env.NODE_ENV === 'development') {
     win.loadURL('http://localhost:5173');
   } else {
-    const indexPath = path.join(__dirname, "dist", "index.html");
-    win.loadURL(`file://${indexPath}`);
+    win.loadFile(path.join(__dirname, "dist", "index.html"));
   }
 }
 
@@ -21,8 +20,22 @@ function createWindow() {
 function startBackend() {
   try {
     const serverPath = path.join(__dirname, "server.js");
-    require(serverPath);
-    console.log("Backend server started");
+    const serverApp = require(serverPath);
+
+    // If server.js doesn't auto-start when required, we might need to call something
+    // but based on our change, it won't auto-start. Let's make it start explicitly if needed.
+    const PORT = process.env.PORT || 3000;
+    const server = serverApp.listen(PORT, "0.0.0.0", () => {
+      console.log(`Backend server started on port ${PORT}`);
+    });
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`Backend server (port ${PORT}) already running.`);
+      } else {
+        console.error("Backend server error:", err);
+      }
+    });
   } catch (err) {
     console.error("Failed to start backend server:", err);
   }
@@ -31,4 +44,13 @@ function startBackend() {
 app.whenReady().then(() => {
   startBackend();
   createWindow();
+});
+
+// Global error handling to catch main process crashes
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception in main process:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
