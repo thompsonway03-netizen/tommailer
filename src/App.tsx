@@ -100,12 +100,19 @@ export default function App() {
   };
 
   const buildApiUrl = (path: string) => {
-    let prefix = serverUrl ? serverUrl.trim().replace(/\/+$/, '') : 'http://localhost:3000';
-    // Auto-fix missing https://
-    if (prefix && !prefix.startsWith('http') && prefix.includes('.')) {
-      prefix = `https://${prefix}`;
+    let prefix = serverUrl ? serverUrl.trim().replace(/\/+$/, '') : "http://localhost:3000";
+    const hasProtocol = /^https?:\/\//i.test(prefix);
+    if (!hasProtocol && prefix) {
+      const isLocalTarget =
+        /^localhost(?::\d+)?$/i.test(prefix) ||
+        /^(127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(prefix) ||
+        /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(prefix) ||
+        /^192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(prefix) ||
+        /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(prefix);
+      prefix = `${isLocalTarget ? "http" : "https"}://${prefix}`;
     }
-    return prefix ? `${prefix}${path.startsWith('/') ? '' : '/'}${path}` : path;
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return prefix ? `${prefix}${normalizedPath}` : normalizedPath;
   };
 
   const apiFetch = (path: string, opts: RequestInit = {}) => {
