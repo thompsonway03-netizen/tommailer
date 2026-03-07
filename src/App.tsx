@@ -121,6 +121,13 @@ export default function App() {
     return fetch(url, opts);
   };
 
+  const localApiFetch = (path: string, opts: RequestInit = {}) => {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const url = `http://localhost:3000${normalizedPath}`;
+    console.log(`[local-API] Fetching: ${url}`);
+    return fetch(url, opts);
+  };
+
   const checkActivation = async (key: string, id: string) => {
     const normalizedKey = key.trim().toUpperCase();
 
@@ -286,7 +293,7 @@ export default function App() {
           body
         };
         if (replyTo) payload.replyTo = replyTo;
-        const res = await apiFetch("/api/send-emails", {
+        const res = await localApiFetch("/api/send-emails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -306,7 +313,7 @@ export default function App() {
           active = false;
           break;
         }
-        const apiUrl = buildApiUrl("/api/send-emails");
+        const apiUrl = "http://localhost:3000/api/send-emails";
         const message = err?.message === "Failed to fetch"
           ? `Network error (Failed to fetch). Check server reachability at ${apiUrl}.`
           : err.message;
@@ -340,7 +347,7 @@ export default function App() {
     }
     addLog(`Testing connection for ${newSender.user}...`, "info");
     try {
-      const res = await apiFetch("/api/send-emails", {
+      const res = await localApiFetch("/api/send-emails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -357,7 +364,7 @@ export default function App() {
         addLog(`SMTP Connection Failed: ${data.message}`, "error");
       }
     } catch (e) {
-      const apiUrl = buildApiUrl("/api/send-emails");
+      const apiUrl = "http://localhost:3000/api/send-emails";
       addLog(`Connection failed. Verify SMTP fields and API endpoint (${apiUrl}).`, "error");
     }
   };
