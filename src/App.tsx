@@ -275,7 +275,7 @@ export default function App() {
           body
         };
         if (replyTo) payload.replyTo = replyTo;
-        const res = await fetch("/api/send-emails", {
+        const res = await apiFetch("/api/send-emails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -325,7 +325,7 @@ export default function App() {
     }
     addLog(`Testing connection for ${newSender.user}...`, "info");
     try {
-      const res = await fetch("/api/send-emails", {
+      const res = await apiFetch("/api/send-emails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
