@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:web",
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "dist/**", "use": "@vercel/static" },
     { "src": "keygen.html", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1.js" }
+    { "src": "/(.*)", "dest": "/index.html", "status": 200 }
   ]
 }
