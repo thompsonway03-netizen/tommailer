@@ -19,9 +19,40 @@ class LicenseDB {
     if (this.isUsingSupabase) {
       this.supabase = createClient(this.supabaseUrl, this.supabaseKey);
       console.log('[DB] Using Supabase (Postgres) persistence.');
+      this.seedSupabase(); // Trigger background seed if empty
     } else {
       console.log(`[DB] Using JSON persistence: ${this.dbFilePath}`);
       this.load();
+    }
+  }
+
+  async seedSupabase() {
+    try {
+      const { count, error } = await this.supabase
+        .from('licenses')
+        .select('*', { count: 'exact', head: true });
+
+      if (!error && count === 0) {
+        console.log('[DB] Supabase is empty, seeding from licensing.json...');
+        const legacyBundledFile = path.join(__dirname, 'licensing.json');
+        if (fs.existsSync(legacyBundledFile)) {
+          const data = fs.readFileSync(legacyBundledFile, 'utf-8');
+          const keysArray = JSON.parse(data);
+          if (keysArray.length > 0) {
+            const { error: insertError } = await this.supabase
+              .from('licenses')
+              .insert(keysArray.map(k => ({
+                serial_key: k.serial_key.toUpperCase(),
+                is_active: !!k.is_active,
+                hwid_locked_to: k.hwid_locked_to || null
+              })));
+            if (insertError) console.error('[DB] Seeding Error:', insertError);
+            else console.log(`[DB] Successfully seeded ${keysArray.length} keys to Supabase.`);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[DB] Seed failed:', e);
     }
   }
 

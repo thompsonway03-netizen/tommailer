@@ -99,13 +99,17 @@ export default function App() {
     }]);
   };
 
-  const apiFetch = (path: string, opts: RequestInit = {}) => {
+  const buildApiUrl = (path: string) => {
     let prefix = serverUrl ? serverUrl.trim().replace(/\/+$/, '') : 'http://localhost:3000';
     // Auto-fix missing https://
     if (prefix && !prefix.startsWith('http') && prefix.includes('.')) {
       prefix = `https://${prefix}`;
     }
-    const url = prefix ? `${prefix}${path.startsWith('/') ? '' : '/'}${path}` : path;
+    return prefix ? `${prefix}${path.startsWith('/') ? '' : '/'}${path}` : path;
+  };
+
+  const apiFetch = (path: string, opts: RequestInit = {}) => {
+    const url = buildApiUrl(path);
     console.log(`[API] Fetching: ${url}`);
     return fetch(url, opts);
   };
@@ -295,8 +299,12 @@ export default function App() {
           active = false;
           break;
         }
-        setRecipients(prev => prev.map((r, idx) => idx === i ? { ...r, status: "error", error: err.message } : r));
-        addLog(`Failed to send to ${recipient.email}: ${err.message}`, "error");
+        const apiUrl = buildApiUrl("/api/send-emails");
+        const message = err?.message === "Failed to fetch"
+          ? `Network error (Failed to fetch). Check server reachability at ${apiUrl}.`
+          : err.message;
+        setRecipients(prev => prev.map((r, idx) => idx === i ? { ...r, status: "error", error: message } : r));
+        addLog(`Failed to send to ${recipient.email}: ${message}`, "error");
       }
 
       // 60s Delay (except for the last one or if stopped)
@@ -342,7 +350,8 @@ export default function App() {
         addLog(`SMTP Connection Failed: ${data.message}`, "error");
       }
     } catch (e) {
-      addLog("Connection failed. Check your host and port.", "error");
+      const apiUrl = buildApiUrl("/api/send-emails");
+      addLog(`Connection failed. Verify SMTP fields and API endpoint (${apiUrl}).`, "error");
     }
   };
 

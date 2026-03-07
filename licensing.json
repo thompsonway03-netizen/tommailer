@@ -1,1 +1,102 @@
-[]
+[
+  {
+    "serial_key": "317D2C0FDA",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "4D41AE4963",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "8B647A684B",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "5E9677FC94",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "E2FCB1B0E1",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "D937DFBE64",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "F19637EC35",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "4B7FB4ACAD",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "2C4E7880CC",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "82D3A9E94C",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "DC40A4535B",
+    "is_active": true,
+    "hwid_locked_to": "07l898fcni235dbr90kmwlv"
+  },
+  {
+    "serial_key": "48054C281F",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "5B789EB110",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "35FB0021BA",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "CFD25CCD08",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "04A1E275C1",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "8514CEBD92",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "4295CA2E5A",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "09A4EB33C6",
+    "is_active": false,
+    "hwid_locked_to": null
+  },
+  {
+    "serial_key": "85017A0FC2",
+    "is_active": false,
+    "hwid_locked_to": null
+  }
+]
