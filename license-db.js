@@ -163,3 +163,4 @@ class LicenseDB {
 }
 
 module.exports = LicenseDB;
+
